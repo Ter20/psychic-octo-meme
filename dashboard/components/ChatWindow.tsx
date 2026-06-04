@@ -1,9 +1,10 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, Copy, Wrench, ChevronDown, ArrowDown } from "lucide-react";
+import { Send, RotateCcw, Copy, Wrench, ChevronDown, ArrowDown, Mic } from "lucide-react";
 import { getAgent, type AgentConfig } from "@/lib/agents";
 import AgentAvatar from "@/components/AgentAvatar";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -464,8 +465,28 @@ export default function ChatWindow({ agentId }: { agentId: string }) {
   const resetSession = () => {
     setMessages([]);
     setSessionId(null);
+    voiceStop();
     inputRef.current?.focus();
   };
+
+  // Voice input — appends finalized speech to whatever is already typed
+  const handleVoiceFinal = useCallback(
+    (text: string) => {
+      setInput((prev) => {
+        const joined = prev.trimEnd();
+        return joined ? `${joined} ${text}` : text;
+      });
+      // Auto-resize the textarea after appending
+      requestAnimationFrame(() => {
+        const t = inputRef.current;
+        if (t) { t.style.height = "auto"; t.style.height = `${t.scrollHeight}px`; }
+      });
+    },
+    []
+  );
+
+  const { status: voiceStatus, interim: voiceInterim, supported: voiceSupported, toggle: voiceToggle, stop: voiceStop } =
+    useVoiceInput(handleVoiceFinal);
 
   const copyLast = () => {
     const last = [...messages].reverse().find((m) => m.role === "assistant");
@@ -572,65 +593,156 @@ export default function ChatWindow({ agentId }: { agentId: string }) {
         <div className="max-w-3xl mx-auto">
           <motion.div
             animate={{
-              boxShadow: streaming
-                ? `0 0 0 1px ${a.color}55, 0 4px 24px ${a.color}18`
-                : "0 0 0 1px rgba(255,255,255,0.07)",
+              boxShadow:
+                voiceStatus === "listening"
+                  ? `0 0 0 1px ${a.color}88, 0 4px 28px ${a.color}22`
+                  : streaming
+                  ? `0 0 0 1px ${a.color}55, 0 4px 24px ${a.color}18`
+                  : "0 0 0 1px rgba(255,255,255,0.07)",
             }}
             transition={{ duration: 0.3 }}
-            className="flex items-end gap-3 rounded-2xl px-4 py-3"
+            className="flex flex-col rounded-2xl px-4 pt-3 pb-2.5 gap-2"
             style={{ background: "var(--bg-input)" }}
           >
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKey}
-              placeholder={streaming ? `${a.name} is thinking…` : `Message ${a.name}…`}
-              disabled={streaming}
-              rows={1}
-              className="flex-1 bg-transparent text-sm outline-none resize-none mono"
-              style={{
-                color: "var(--text-1)",
-                lineHeight: "1.6",
-                maxHeight: 140,
-                caretColor: a.color,
-              }}
-              onInput={(e) => {
-                const t = e.currentTarget;
-                t.style.height = "auto";
-                t.style.height = `${t.scrollHeight}px`;
-              }}
-            />
-            <motion.button
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.92 }}
-              onClick={() => send()}
-              disabled={!input.trim() || streaming}
-              className="flex-shrink-0 flex items-center justify-center rounded-xl transition-all"
-              style={{
-                width: 34,
-                height: 34,
-                background:
-                  input.trim() && !streaming
-                    ? `linear-gradient(145deg, ${a.color}, ${a.gradientTo})`
-                    : "rgba(255,255,255,0.05)",
-                boxShadow: input.trim() && !streaming ? `0 2px 12px ${a.color}40` : "none",
-              }}
-            >
-              <Send
-                size={14}
-                color={input.trim() && !streaming ? "white" : "var(--text-3)"}
-                style={{ transform: "translateX(1px)" }}
+            {/* Interim voice-recognition preview */}
+            <AnimatePresence>
+              {voiceStatus === "listening" && voiceInterim && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex items-center gap-2 text-xs overflow-hidden"
+                  style={{ color: a.color }}
+                >
+                  <span className="flex gap-0.5 flex-shrink-0">
+                    {[0, 1, 2].map((i) => (
+                      <span
+                        key={i}
+                        className="typing-dot inline-block w-1 h-1 rounded-full"
+                        style={{ background: a.color, animationDelay: `${i * 0.18}s` }}
+                      />
+                    ))}
+                  </span>
+                  <span className="italic opacity-80 truncate">{voiceInterim}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Textarea + buttons row */}
+            <div className="flex items-end gap-2">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder={
+                  voiceStatus === "listening"
+                    ? "Listening…"
+                    : streaming
+                    ? `${a.name} is thinking…`
+                    : `Message ${a.name}…`
+                }
+                disabled={streaming}
+                rows={1}
+                className="flex-1 bg-transparent text-sm outline-none resize-none mono"
+                style={{
+                  color: "var(--text-1)",
+                  lineHeight: "1.6",
+                  maxHeight: 140,
+                  caretColor: a.color,
+                }}
+                onInput={(e) => {
+                  const t = e.currentTarget;
+                  t.style.height = "auto";
+                  t.style.height = `${t.scrollHeight}px`;
+                }}
               />
-            </motion.button>
+
+              {/* Mic button */}
+              {voiceSupported && (
+                <MicButton
+                  status={voiceStatus}
+                  agentColor={a.color}
+                  onClick={voiceToggle}
+                />
+              )}
+
+              {/* Send button */}
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
+                onClick={() => send()}
+                disabled={!input.trim() || streaming}
+                className="flex-shrink-0 flex items-center justify-center rounded-xl transition-all"
+                style={{
+                  width: 34,
+                  height: 34,
+                  background:
+                    input.trim() && !streaming
+                      ? `linear-gradient(145deg, ${a.color}, ${a.gradientTo})`
+                      : "rgba(255,255,255,0.05)",
+                  boxShadow: input.trim() && !streaming ? `0 2px 12px ${a.color}40` : "none",
+                }}
+              >
+                <Send
+                  size={14}
+                  color={input.trim() && !streaming ? "white" : "var(--text-3)"}
+                  style={{ transform: "translateX(1px)" }}
+                />
+              </motion.button>
+            </div>
           </motion.div>
 
           <p className="text-center text-[10px] mt-2 mono" style={{ color: "var(--text-3)" }}>
-            ⏎ send · ⇧⏎ newline
+            ⏎ send · ⇧⏎ newline{voiceSupported ? " · 🎤 voice" : ""}
           </p>
         </div>
       </div>
     </div>
+  );
+}
+
+function MicButton({
+  status,
+  agentColor,
+  onClick,
+}: {
+  status: "idle" | "listening";
+  agentColor: string;
+  onClick: () => void;
+}) {
+  const isOn = status === "listening";
+  return (
+    <motion.button
+      whileHover={{ scale: 1.08 }}
+      whileTap={{ scale: 0.92 }}
+      onClick={onClick}
+      title={isOn ? "Stop recording (click or just stop speaking)" : "Voice input"}
+      className="relative flex-shrink-0 flex items-center justify-center rounded-xl overflow-visible"
+      style={{
+        width: 34,
+        height: 34,
+        background: isOn ? `${agentColor}1a` : "rgba(255,255,255,0.05)",
+        border: `1px solid ${isOn ? agentColor + "55" : "rgba(255,255,255,0.07)"}`,
+        transition: "background 0.2s, border-color 0.2s",
+      }}
+    >
+      {/* Expanding ring animation while recording */}
+      {isOn && (
+        <motion.span
+          className="absolute inset-0 rounded-xl pointer-events-none"
+          style={{ border: `1px solid ${agentColor}` }}
+          animate={{ scale: [1, 1.6], opacity: [0.7, 0] }}
+          transition={{ duration: 1.1, repeat: Infinity, ease: "easeOut" }}
+        />
+      )}
+      <Mic
+        size={14}
+        color={isOn ? agentColor : "var(--text-3)"}
+        strokeWidth={isOn ? 2.5 : 1.8}
+      />
+    </motion.button>
   );
 }
 
