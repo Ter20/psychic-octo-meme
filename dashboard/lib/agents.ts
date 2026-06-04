@@ -7,6 +7,7 @@ export interface AgentConfig {
   gradientTo: string
   icon: 'sparkles' | 'grip' | 'zap' | 'shield' | 'flame'
   envKey: string | null // null = built-in Claude CLI bridge
+  type?: 'openclaw' | 'generic'
 }
 
 export const AGENTS: AgentConfig[] = [
@@ -28,7 +29,8 @@ export const AGENTS: AgentConfig[] = [
     gradientFrom: '#ea580c',
     gradientTo: '#c2410c',
     icon: 'grip',
-    envKey: 'OPENCLAW_URL',
+    envKey: null,
+    type: 'openclaw',
   },
   {
     id: 'hermes',

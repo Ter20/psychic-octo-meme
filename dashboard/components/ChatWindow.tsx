@@ -390,7 +390,19 @@ export default function ChatWindow({ agentId }: { agentId: string }) {
       setMessages((prev) => [...prev, userMsg, assistantMsg]);
 
       const endpoint = a.id === "claude" ? "/api/claude" : `/api/agent/${a.id}`;
-      const body = a.id === "claude" ? { prompt, sessionId } : { prompt };
+
+      // Build history for multi-turn context (non-Claude agents)
+      const history = messages
+        .filter((m) => m.blocks.some((b) => b.type === "text"))
+        .map((m) => ({
+          role: m.role,
+          content: m.blocks
+            .filter((b) => b.type === "text")
+            .map((b) => (b as { type: "text"; text: string }).text)
+            .join(""),
+        }));
+
+      const body = a.id === "claude" ? { prompt, sessionId } : { prompt, history };
 
       // Accumulate the full assistant text so we can save it after streaming ends
       let responseText = "";
