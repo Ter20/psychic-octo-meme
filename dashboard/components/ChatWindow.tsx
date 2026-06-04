@@ -5,6 +5,7 @@ import { Send, RotateCcw, Copy, Wrench, ChevronDown, ArrowDown, Mic } from "luci
 import { getAgent, type AgentConfig } from "@/lib/agents";
 import AgentAvatar from "@/components/AgentAvatar";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { useObsidianSave } from "@/hooks/useObsidianSave";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -344,6 +345,7 @@ export default function ChatWindow({ agentId }: { agentId: string }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const activeAssistantId = useRef<string | null>(null);
+  const { status: saveStatus, saveChat } = useObsidianSave();
 
   // Reset state when agent changes
   useEffect(() => {
@@ -390,6 +392,9 @@ export default function ChatWindow({ agentId }: { agentId: string }) {
       const endpoint = a.id === "claude" ? "/api/claude" : `/api/agent/${a.id}`;
       const body = a.id === "claude" ? { prompt, sessionId } : { prompt };
 
+      // Accumulate the full assistant text so we can save it after streaming ends
+      let responseText = "";
+
       try {
         const res = await fetch(endpoint, {
           method: "POST",
@@ -416,6 +421,7 @@ export default function ChatWindow({ agentId }: { agentId: string }) {
               if (ev.type === "session") setSessionId(ev.sessionId);
               else if (ev.type === "done" && ev.sessionId) setSessionId(ev.sessionId);
               else if (ev.type === "text") {
+                responseText += ev.text;
                 setMessages((prev) =>
                   prev.map((m) => {
                     if (m.id !== aId) return m;
@@ -450,6 +456,11 @@ export default function ChatWindow({ agentId }: { agentId: string }) {
         setStreaming(false);
         activeAssistantId.current = null;
         inputRef.current?.focus();
+
+        // Auto-save this exchange to Obsidian vault
+        if (responseText.trim()) {
+          saveChat({ agentId: a.id, agentName: a.name, user: prompt, assistant: responseText });
+        }
       }
     },
     [input, streaming, sessionId, a]
@@ -694,8 +705,29 @@ export default function ChatWindow({ agentId }: { agentId: string }) {
             </div>
           </motion.div>
 
-          <p className="text-center text-[10px] mt-2 mono" style={{ color: "var(--text-3)" }}>
-            ⏎ send · ⇧⏎ newline{voiceSupported ? " · 🎤 voice" : ""}
+          <p className="text-center text-[10px] mt-2 mono flex items-center justify-center gap-1" style={{ color: "var(--text-3)" }}>
+            <span>⏎ send · ⇧⏎ newline{voiceSupported ? " · 🎤 voice" : ""}</span>
+            <AnimatePresence>
+              {saveStatus !== "idle" && (
+                <motion.span
+                  key={saveStatus}
+                  initial={{ opacity: 0, x: 6 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  style={{
+                    color:
+                      saveStatus === "saved" ? "#34d399" :
+                      saveStatus === "error" ? "#f87171" :
+                      "var(--text-3)",
+                  }}
+                >
+                  {saveStatus === "saving" ? "· saving…" :
+                   saveStatus === "saved"  ? "· ✓ vault" :
+                                             "· vault error"}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </p>
         </div>
       </div>
