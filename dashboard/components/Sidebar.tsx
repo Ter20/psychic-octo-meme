@@ -4,8 +4,29 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { AGENTS } from "@/lib/agents";
 import AgentAvatar from "@/components/AgentAvatar";
-import { Settings, ChevronRight, Zap } from "lucide-react";
+import { Settings, ChevronRight, Zap, BookOpen, Target } from "lucide-react";
 import { useState } from "react";
+
+const WORKSPACE_ITEMS = [
+  {
+    href: "/journal",
+    label: "Journal",
+    sub: "Daily notes",
+    color: "#10b981",
+    gradientFrom: "#059669",
+    gradientTo: "#047857",
+    Icon: BookOpen,
+  },
+  {
+    href: "/goals",
+    label: "Goals",
+    sub: "Checkbox tasks",
+    color: "#8b5cf6",
+    gradientFrom: "#7c3aed",
+    gradientTo: "#4f46e5",
+    Icon: Target,
+  },
+] as const;
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -129,6 +150,73 @@ export default function Sidebar() {
 
                 {!collapsed && isActive && (
                   <ChevronRight size={12} style={{ color: agent.color, flexShrink: 0, opacity: 0.7 }} />
+                )}
+              </motion.div>
+            </Link>
+          );
+        })}
+
+        {/* Workspace section divider */}
+        <div className="mt-2 mb-2 px-2">
+          <div style={{ height: 1, background: "var(--border)" }} />
+        </div>
+
+        {!collapsed && (
+          <p className="text-[10px] font-semibold tracking-widest uppercase mb-2 px-2" style={{ color: "var(--text-3)" }}>
+            Workspace
+          </p>
+        )}
+
+        {WORKSPACE_ITEMS.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link key={item.href} href={item.href} prefetch>
+              <motion.div
+                whileHover={{ x: collapsed ? 0 : 2 }}
+                transition={{ duration: 0.12 }}
+                className="sidebar-item flex items-center gap-3 rounded-xl mb-0.5 cursor-pointer"
+                style={{
+                  padding: collapsed ? "10px" : "9px 10px",
+                  background: isActive ? `${item.color}10` : "transparent",
+                  borderLeft: isActive ? `2px solid ${item.color}` : "2px solid transparent",
+                  justifyContent: collapsed ? "center" : "flex-start",
+                }}
+                title={collapsed ? item.label : undefined}
+              >
+                <div
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 10,
+                    background: `linear-gradient(145deg, ${item.gradientFrom}, ${item.gradientTo})`,
+                    boxShadow: `0 2px 8px ${item.color}28`,
+                  }}
+                >
+                  <item.Icon size={15} color="white" strokeWidth={1.8} />
+                </div>
+
+                <AnimatePresence>
+                  {!collapsed && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="flex-1 min-w-0"
+                    >
+                      <div className="text-sm font-medium leading-tight" style={{ color: isActive ? "var(--text-1)" : "var(--text-2)" }}>
+                        {item.label}
+                      </div>
+                      <div className="text-[11px] mt-0.5" style={{ color: "var(--text-3)" }}>
+                        {item.sub}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {!collapsed && isActive && (
+                  <ChevronRight size={12} style={{ color: item.color, flexShrink: 0, opacity: 0.7 }} />
                 )}
               </motion.div>
             </Link>

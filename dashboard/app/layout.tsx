@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {
   title: "Mission Control",
@@ -17,7 +18,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="h-full">{children}</body>
+      <body className="h-full flex overflow-hidden" style={{ background: "var(--bg-base)" }}>
+        <Sidebar />
+        <main className="flex-1 overflow-hidden min-w-0">{children}</main>
+      </body>
     </html>
   );
 }
