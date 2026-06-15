@@ -5,6 +5,10 @@ function openclawBase() {
   return `http://127.0.0.1:${port}`;
 }
 
+function ollamaBase() {
+  return process.env.HERMES_URL ?? "http://127.0.0.1:11434";
+}
+
 const AGENTS = [
   { id: "openclaw", name: "OpenClaw", description: "Autonomous reasoning & tool orchestration", color: "orange" },
   { id: "hermes",   name: "Hermes",   description: "Fast message routing & relay",              color: "blue"   },
@@ -23,6 +27,11 @@ async function pingAgent(id: string): Promise<"online" | "offline" | "unknown"> 
       return res.ok ? "online" : "offline";
     }
 
+    if (id === "hermes") {
+      const res = await fetch(`${ollamaBase()}/api/tags`, { signal: AbortSignal.timeout(2000) });
+      return res.ok ? "online" : "offline";
+    }
+
     // Generic agents: need an env var URL
     const envKey = `${id.toUpperCase()}_URL`;
     const endpoint = process.env[envKey];
@@ -30,7 +39,7 @@ async function pingAgent(id: string): Promise<"online" | "offline" | "unknown"> 
     const res = await fetch(`${endpoint}/health`, { signal: AbortSignal.timeout(2000) });
     return res.ok ? "online" : "offline";
   } catch {
-    return id === "openclaw" ? "offline" : "unknown";
+    return id === "openclaw" || id === "hermes" ? "offline" : "unknown";
   }
 }
 

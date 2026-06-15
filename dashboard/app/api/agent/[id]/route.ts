@@ -7,6 +7,14 @@ function openclawGatewayBase() {
   return `http://127.0.0.1:${port}`;
 }
 
+function ollamaBase() {
+  return process.env.HERMES_URL ?? "http://127.0.0.1:11434";
+}
+
+function ollamaModel() {
+  return process.env.HERMES_MODEL ?? "hermes3";
+}
+
 async function streamOpenClaw(
   messages: { role: string; content: string }[],
   controller: ReadableStreamDefaultController,
@@ -80,6 +88,75 @@ async function streamOpenClaw(
   controller.close();
 }
 
+async function streamOllama(
+  messages: { role: string; content: string }[],
+  controller: ReadableStreamDefaultController,
+  encoder: TextEncoder
+) {
+  const send = (data: object) =>
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+
+  const base = ollamaBase();
+  const model = ollamaModel();
+
+  let res: Response;
+  try {
+    res = await fetch(`${base}/v1/chat/completions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model, messages, stream: true }),
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    send({
+      type: "error",
+      text: `Could not reach Hermes at ${base}: ${msg}\n\nMake sure Ollama is running (\`ollama serve\`) and the model is pulled (\`ollama pull ${model}\`).\n\nOverride the URL with \`HERMES_URL\` or the model with \`HERMES_MODEL\` in \`.env.local\`.`,
+    });
+    send({ type: "done" });
+    controller.close();
+    return;
+  }
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    send({ type: "error", text: `Hermes (Ollama) returned ${res.status}: ${body}` });
+    send({ type: "done" });
+    controller.close();
+    return;
+  }
+
+  const reader = res.body!.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+
+    const lines = buf.split("\n");
+    buf = lines.pop() ?? "";
+
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      const payload = line.slice(6).trim();
+      if (payload === "[DONE]") continue;
+      try {
+        const json = JSON.parse(payload);
+        const delta = json?.choices?.[0]?.delta;
+        if (delta?.content) {
+          send({ type: "text", text: delta.content });
+        }
+      } catch {
+        // malformed SSE line — skip
+      }
+    }
+  }
+
+  send({ type: "done" });
+  controller.close();
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -113,6 +190,16 @@ export async function POST(
         streamOpenClaw(messages, controller, encoder).catch((err: unknown) => {
           const msg = err instanceof Error ? err.message : String(err);
           send({ type: "error", text: `OpenClaw error: ${msg}` });
+          send({ type: "done" });
+          controller.close();
+        });
+        return;
+      }
+
+      if (agent.type === "ollama") {
+        streamOllama(messages, controller, encoder).catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          send({ type: "error", text: `Hermes error: ${msg}` });
           send({ type: "done" });
           controller.close();
         });

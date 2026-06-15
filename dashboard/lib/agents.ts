@@ -7,7 +7,7 @@ export interface AgentConfig {
   gradientTo: string
   icon: 'sparkles' | 'grip' | 'zap' | 'shield' | 'flame'
   envKey: string | null // null = built-in Claude CLI bridge
-  type?: 'openclaw' | 'generic'
+  type?: 'openclaw' | 'ollama' | 'generic'
 }
 
 export const AGENTS: AgentConfig[] = [
@@ -35,12 +35,13 @@ export const AGENTS: AgentConfig[] = [
   {
     id: 'hermes',
     name: 'Hermes',
-    tagline: 'Fast message routing',
+    tagline: 'NousResearch · Local LLM',
     color: '#60a5fa',
     gradientFrom: '#2563eb',
     gradientTo: '#1d4ed8',
     icon: 'zap',
-    envKey: 'HERMES_URL',
+    envKey: null,
+    type: 'ollama',
   },
   {
     id: 'sentinel',
