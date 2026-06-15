@@ -7,7 +7,7 @@ export interface AgentConfig {
   gradientTo: string
   icon: 'sparkles' | 'grip' | 'zap' | 'shield' | 'flame'
   envKey: string | null // null = built-in Claude CLI bridge
-  type?: 'openclaw' | 'ollama' | 'generic'
+  type?: 'openclaw' | 'ollama' | 'openrouter' | 'openai' | 'generic'
 }
 
 export const AGENTS: AgentConfig[] = [
@@ -35,33 +35,35 @@ export const AGENTS: AgentConfig[] = [
   {
     id: 'hermes',
     name: 'Hermes',
-    tagline: 'NousResearch · Local LLM',
+    tagline: 'NousResearch · OpenRouter',
     color: '#60a5fa',
     gradientFrom: '#2563eb',
     gradientTo: '#1d4ed8',
     icon: 'zap',
     envKey: null,
-    type: 'ollama',
+    type: 'openrouter',
   },
   {
     id: 'sentinel',
     name: 'Sentinel',
-    tagline: 'Security monitoring',
+    tagline: 'OpenAI · GPT-4o',
     color: '#34d399',
     gradientFrom: '#059669',
     gradientTo: '#047857',
     icon: 'shield',
-    envKey: 'SENTINEL_URL',
+    envKey: null,
+    type: 'openai',
   },
   {
     id: 'forge',
     name: 'Forge',
-    tagline: 'Code generation',
+    tagline: 'OpenAI · o3-mini',
     color: '#fbbf24',
     gradientFrom: '#d97706',
     gradientTo: '#b45309',
     icon: 'flame',
-    envKey: 'FORGE_URL',
+    envKey: null,
+    type: 'openai',
   },
 ]
 

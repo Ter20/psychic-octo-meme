@@ -1,168 +1,148 @@
-import { AGENTS } from "@/lib/agents";
+import { AGENTS, AgentConfig } from "@/lib/agents";
 
 export const dynamic = "force-dynamic";
 
-function openclawGatewayBase() {
-  const port = process.env.OPENCLAW_GATEWAY_PORT ?? "18789";
-  return `http://127.0.0.1:${port}`;
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+function openclawBase() {
+  return `http://127.0.0.1:${process.env.OPENCLAW_GATEWAY_PORT ?? "18789"}`;
 }
 
-function ollamaBase() {
-  return process.env.HERMES_URL ?? "http://127.0.0.1:11434";
-}
+const OPENROUTER_MODELS: Record<string, string> = {
+  hermes: "nousresearch/hermes-3-llama-3.1-405b",
+};
 
-function ollamaModel() {
-  return process.env.HERMES_MODEL ?? "hermes3";
-}
+const OPENAI_MODELS: Record<string, string> = {
+  sentinel: "gpt-4o",
+  forge: "o3-mini",
+};
 
-async function streamOpenClaw(
-  messages: { role: string; content: string }[],
+// ── shared OpenAI-compatible SSE parser ──────────────────────────────────────
+
+async function streamOpenAICompat(
+  url: string,
+  headers: Record<string, string>,
+  body: object,
   controller: ReadableStreamDefaultController,
-  encoder: TextEncoder
+  encoder: TextEncoder,
+  label: string
 ) {
   const send = (data: object) =>
     controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
 
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...headers },
+      body: JSON.stringify(body),
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    send({ type: "error", text: `Could not reach ${label}: ${msg}` });
+    send({ type: "done" });
+    controller.close();
+    return;
+  }
+
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => "");
+    send({ type: "error", text: `${label} returned ${res.status}: ${errBody}` });
+    send({ type: "done" });
+    controller.close();
+    return;
+  }
+
+  const reader = res.body!.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+
+    const lines = buf.split("\n");
+    buf = lines.pop() ?? "";
+
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      const payload = line.slice(6).trim();
+      if (payload === "[DONE]") continue;
+      try {
+        const json = JSON.parse(payload);
+        const content = json?.choices?.[0]?.delta?.content;
+        if (content) send({ type: "text", text: content });
+      } catch {
+        // malformed chunk — skip
+      }
+    }
+  }
+
+  send({ type: "done" });
+  controller.close();
+}
+
+// ── per-type streaming functions ─────────────────────────────────────────────
+
+function streamOpenClaw(messages: { role: string; content: string }[], ctrl: ReadableStreamDefaultController, enc: TextEncoder) {
   const token = process.env.OPENCLAW_GATEWAY_TOKEN;
-  const base = openclawGatewayBase();
-
-  let res: Response;
-  try {
-    res = await fetch(`${base}/v1/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({
-        model: "openclaw:main",
-        messages,
-        stream: true,
-      }),
-    });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    send({ type: "error", text: `Could not reach OpenClaw gateway at ${base}: ${msg}\n\nMake sure the OpenClaw daemon is running (\`openclaw status\`) and that \`chatCompletions\` is enabled in \`~/.openclaw/openclaw.json\`.` });
-    send({ type: "done" });
-    controller.close();
-    return;
-  }
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    send({ type: "error", text: `OpenClaw gateway returned ${res.status}: ${body}` });
-    send({ type: "done" });
-    controller.close();
-    return;
-  }
-
-  const reader = res.body!.getReader();
-  const dec = new TextDecoder();
-  let buf = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-
-    const lines = buf.split("\n");
-    buf = lines.pop() ?? "";
-
-    for (const line of lines) {
-      if (!line.startsWith("data: ")) continue;
-      const payload = line.slice(6).trim();
-      if (payload === "[DONE]") continue;
-      try {
-        const json = JSON.parse(payload);
-        const delta = json?.choices?.[0]?.delta;
-        if (delta?.content) {
-          send({ type: "text", text: delta.content });
-        }
-      } catch {
-        // malformed SSE line — skip
-      }
-    }
-  }
-
-  send({ type: "done" });
-  controller.close();
+  return streamOpenAICompat(
+    `${openclawBase()}/v1/chat/completions`,
+    token ? { Authorization: `Bearer ${token}` } : {},
+    { model: "openclaw:main", messages, stream: true },
+    ctrl, enc, "OpenClaw"
+  );
 }
 
-async function streamOllama(
-  messages: { role: string; content: string }[],
-  controller: ReadableStreamDefaultController,
-  encoder: TextEncoder
-) {
-  const send = (data: object) =>
-    controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-
-  const base = ollamaBase();
-  const model = ollamaModel();
-
-  let res: Response;
-  try {
-    res = await fetch(`${base}/v1/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model, messages, stream: true }),
-    });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    send({
-      type: "error",
-      text: `Could not reach Hermes at ${base}: ${msg}\n\nMake sure Ollama is running (\`ollama serve\`) and the model is pulled (\`ollama pull ${model}\`).\n\nOverride the URL with \`HERMES_URL\` or the model with \`HERMES_MODEL\` in \`.env.local\`.`,
-    });
+function streamOpenRouter(agentId: string, messages: { role: string; content: string }[], ctrl: ReadableStreamDefaultController, enc: TextEncoder) {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) {
+    const send = (d: object) => ctrl.enqueue(enc.encode(`data: ${JSON.stringify(d)}\n\n`));
+    send({ type: "error", text: "OPENROUTER_API_KEY is not set in .env.local" });
     send({ type: "done" });
-    controller.close();
-    return;
+    ctrl.close();
+    return Promise.resolve();
   }
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    send({ type: "error", text: `Hermes (Ollama) returned ${res.status}: ${body}` });
-    send({ type: "done" });
-    controller.close();
-    return;
-  }
-
-  const reader = res.body!.getReader();
-  const dec = new TextDecoder();
-  let buf = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-
-    const lines = buf.split("\n");
-    buf = lines.pop() ?? "";
-
-    for (const line of lines) {
-      if (!line.startsWith("data: ")) continue;
-      const payload = line.slice(6).trim();
-      if (payload === "[DONE]") continue;
-      try {
-        const json = JSON.parse(payload);
-        const delta = json?.choices?.[0]?.delta;
-        if (delta?.content) {
-          send({ type: "text", text: delta.content });
-        }
-      } catch {
-        // malformed SSE line — skip
-      }
-    }
-  }
-
-  send({ type: "done" });
-  controller.close();
+  const model = OPENROUTER_MODELS[agentId] ?? "nousresearch/hermes-3-llama-3.1-405b";
+  return streamOpenAICompat(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      Authorization: `Bearer ${key}`,
+      "HTTP-Referer": "http://localhost:3000",
+      "X-Title": "Mission Control",
+    },
+    { model, messages, stream: true },
+    ctrl, enc, `Hermes (OpenRouter/${model})`
+  );
 }
+
+function streamOpenAI(agentId: string, messages: { role: string; content: string }[], ctrl: ReadableStreamDefaultController, enc: TextEncoder) {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) {
+    const send = (d: object) => ctrl.enqueue(enc.encode(`data: ${JSON.stringify(d)}\n\n`));
+    send({ type: "error", text: "OPENAI_API_KEY is not set in .env.local" });
+    send({ type: "done" });
+    ctrl.close();
+    return Promise.resolve();
+  }
+  const model = OPENAI_MODELS[agentId] ?? "gpt-4o";
+  return streamOpenAICompat(
+    "https://api.openai.com/v1/chat/completions",
+    { Authorization: `Bearer ${key}` },
+    { model, messages, stream: true },
+    ctrl, enc, `${agentId} (OpenAI/${model})`
+  );
+}
+
+// ── route ────────────────────────────────────────────────────────────────────
 
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const agent = AGENTS.find((a) => a.id === id);
+  const agent: AgentConfig | undefined = AGENTS.find((a) => a.id === id);
 
   if (!agent) {
     return new Response(JSON.stringify({ error: "Unknown agent" }), {
@@ -173,7 +153,6 @@ export async function POST(
 
   const { prompt, history } = await req.json();
 
-  // Build messages array from history + current prompt
   const messages: { role: string; content: string }[] = [
     ...(Array.isArray(history) ? history : []),
     { role: "user", content: prompt },
@@ -186,77 +165,66 @@ export async function POST(
       const send = (data: object) =>
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
 
+      const wrap = (p: Promise<void>) =>
+        p.catch((err: unknown) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          send({ type: "error", text: `${agent.name} error: ${msg}` });
+          send({ type: "done" });
+          controller.close();
+        });
+
       if (agent.type === "openclaw") {
-        streamOpenClaw(messages, controller, encoder).catch((err: unknown) => {
-          const msg = err instanceof Error ? err.message : String(err);
-          send({ type: "error", text: `OpenClaw error: ${msg}` });
+        wrap(streamOpenClaw(messages, controller, encoder));
+      } else if (agent.type === "openrouter") {
+        wrap(streamOpenRouter(agent.id, messages, controller, encoder));
+      } else if (agent.type === "openai") {
+        wrap(streamOpenAI(agent.id, messages, controller, encoder));
+      } else {
+        // Generic fallback
+        const endpointUrl = agent.envKey ? process.env[agent.envKey] : null;
+        if (!endpointUrl) {
+          const lines = [
+            `**${agent.name}** is not connected yet.`,
+            ``,
+            `Add this to your \`.env.local\`:`,
+            ``,
+            `\`\`\``,
+            `${agent.envKey ?? agent.id.toUpperCase() + "_URL"}=http://localhost:PORT`,
+            `\`\`\``,
+          ];
+          for (const line of lines) send({ type: "text", text: line + "\n" });
           send({ type: "done" });
           controller.close();
-        });
-        return;
-      }
-
-      if (agent.type === "ollama") {
-        streamOllama(messages, controller, encoder).catch((err: unknown) => {
-          const msg = err instanceof Error ? err.message : String(err);
-          send({ type: "error", text: `Hermes error: ${msg}` });
-          send({ type: "done" });
-          controller.close();
-        });
-        return;
-      }
-
-      // Generic agent: requires envKey URL
-      const endpointUrl = agent.envKey ? process.env[agent.envKey] : null;
-
-      if (!endpointUrl) {
-        const lines = [
-          `**${agent.name}** is not connected yet.`,
-          ``,
-          `Add this to your \`.env.local\`:`,
-          ``,
-          `\`\`\``,
-          `${agent.envKey ?? agent.id.toUpperCase() + "_URL"}=http://localhost:PORT`,
-          `\`\`\``,
-          ``,
-          `The endpoint must accept \`POST /chat\` with \`{ "prompt": "..." }\`.`,
-        ];
-        for (const line of lines) {
-          send({ type: "text", text: line + "\n" });
+          return;
         }
-        send({ type: "done" });
-        controller.close();
-        return;
-      }
-
-      fetch(`${endpointUrl}/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      })
-        .then(async (res) => {
-          const contentType = res.headers.get("content-type") ?? "";
-          if (contentType.includes("text/event-stream")) {
-            const reader = res.body!.getReader();
-            const dec = new TextDecoder();
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              controller.enqueue(encoder.encode(dec.decode(value)));
-            }
-          } else {
-            const body = await res.json();
-            const text = body.text ?? body.content ?? body.message ?? JSON.stringify(body);
-            send({ type: "text", text });
-          }
-          send({ type: "done" });
-          controller.close();
+        fetch(`${endpointUrl}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt }),
         })
-        .catch((err: Error) => {
-          send({ type: "error", text: `Could not reach ${agent.name}: ${err.message}` });
-          send({ type: "done" });
-          controller.close();
-        });
+          .then(async (res) => {
+            const ct = res.headers.get("content-type") ?? "";
+            if (ct.includes("text/event-stream")) {
+              const reader = res.body!.getReader();
+              const dec = new TextDecoder();
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                controller.enqueue(encoder.encode(dec.decode(value)));
+              }
+            } else {
+              const body = await res.json();
+              send({ type: "text", text: body.text ?? body.content ?? body.message ?? JSON.stringify(body) });
+            }
+            send({ type: "done" });
+            controller.close();
+          })
+          .catch((err: Error) => {
+            send({ type: "error", text: `Could not reach ${agent.name}: ${err.message}` });
+            send({ type: "done" });
+            controller.close();
+          });
+      }
     },
   });
 
