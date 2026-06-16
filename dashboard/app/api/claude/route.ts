@@ -45,7 +45,7 @@ export async function POST(req: Request) {
           return;
         }
 
-        const args = ["--print", "--output-format", "stream-json"];
+        const args = ["--print", "--output-format", "stream-json", "--verbose"];
         if (sessionId) args.push("--resume", sessionId);
         args.push("--", prompt);
 
