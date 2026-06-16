@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { AGENTS } from "@/lib/agents";
 import AgentAvatar from "@/components/AgentAvatar";
-import { Settings, ChevronRight, Zap, BookOpen, Target } from "lucide-react";
+import { Settings, ChevronRight, Zap, BookOpen, Target, Home } from "lucide-react";
 import { useState } from "react";
 
 const WORKSPACE_ITEMS = [
@@ -224,31 +224,49 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom: settings */}
+      {/* Bottom: home + settings */}
       <div
-        className="flex-shrink-0 p-2"
+        className="flex-shrink-0 p-2 flex flex-col gap-0.5"
         style={{ borderTop: "1px solid var(--border)" }}
       >
-        <div
-          className="sidebar-item flex items-center gap-3 rounded-xl px-2.5 py-2 cursor-pointer"
-          style={{ justifyContent: collapsed ? "center" : "flex-start" }}
-          title="Settings"
-        >
-          <Settings size={15} style={{ color: "var(--text-3)", flexShrink: 0 }} />
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-xs"
-                style={{ color: "var(--text-3)" }}
-              >
-                Settings
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </div>
+        <Link href="/">
+          <div
+            className="sidebar-item flex items-center gap-3 rounded-xl px-2.5 py-2 cursor-pointer"
+            style={{ justifyContent: collapsed ? "center" : "flex-start" }}
+            title="Home"
+          >
+            <Home size={15} style={{ color: "var(--text-3)", flexShrink: 0 }} />
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.span
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="text-xs" style={{ color: "var(--text-3)" }}
+                >
+                  Home
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
+        </Link>
+        <Link href="/settings">
+          <div
+            className="sidebar-item flex items-center gap-3 rounded-xl px-2.5 py-2 cursor-pointer"
+            style={{ justifyContent: collapsed ? "center" : "flex-start" }}
+            title="Settings"
+          >
+            <Settings size={15} style={{ color: "var(--text-3)", flexShrink: 0 }} />
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.span
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="text-xs" style={{ color: "var(--text-3)" }}
+                >
+                  Settings
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
+        </Link>
       </div>
     </motion.aside>
   );
