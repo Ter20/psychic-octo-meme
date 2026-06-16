@@ -2,6 +2,23 @@ import { spawn } from "child_process";
 
 export const dynamic = "force-dynamic";
 
+const IS_WIN = process.platform === "win32";
+
+function findClaude(): Promise<string> {
+  return new Promise((resolve) => {
+    // "where" on Windows, "which" on Mac/Linux
+    const finder = spawn(IS_WIN ? "where" : "which", ["claude"], { shell: IS_WIN });
+    let out = "";
+    finder.stdout.on("data", (d: Buffer) => { out += d.toString(); });
+    finder.on("close", (code: number) => {
+      // "where" can return multiple lines; take the first non-empty one
+      const path = out.split(/\r?\n/).map((l) => l.trim()).find(Boolean) ?? "";
+      resolve(code === 0 && path ? path : "");
+    });
+    finder.on("error", () => resolve(""));
+  });
+}
+
 export async function POST(req: Request) {
   const { prompt, sessionId } = await req.json();
 
@@ -20,16 +37,9 @@ export async function POST(req: Request) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
-      // Check if claude CLI is available
-      const which = spawn("which", ["claude"]);
-      let claudePath = "";
-
-      which.stdout.on("data", (d: Buffer) => { claudePath += d.toString().trim(); });
-
-      which.on("close", (code: number) => {
-        if (code !== 0 || !claudePath) {
-          // Fallback: simulate a helpful message when CLI isn't available
-          send({ type: "text", text: "⚠️ Claude CLI not found in PATH. To connect:\n\n```bash\nnpm install -g @anthropic-ai/claude-code\nclaude auth\n```\n\nOnce installed, restart the dev server and your prompts will stream directly through the CLI." });
+      findClaude().then((claudePath) => {
+        if (!claudePath) {
+          send({ type: "text", text: "⚠️ Claude CLI not found in PATH. To connect:\n\n```\nnpm install -g @anthropic-ai/claude-code\nclaude auth\n```\n\nOnce installed, restart the dev server." });
           send({ type: "done" });
           controller.close();
           return;
@@ -41,6 +51,7 @@ export async function POST(req: Request) {
 
         const proc = spawn(claudePath, args, {
           env: { ...process.env },
+          shell: IS_WIN, // needed on Windows so .cmd wrappers execute
           stdio: ["ignore", "pipe", "pipe"],
         });
 
@@ -99,6 +110,11 @@ export async function POST(req: Request) {
           send({ type: "done" });
           controller.close();
         });
+      }).catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        send({ type: "error", text: `Claude CLI error: ${msg}` });
+        send({ type: "done" });
+        controller.close();
       });
     },
   });
