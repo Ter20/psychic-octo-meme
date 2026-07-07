@@ -22,12 +22,23 @@ class DelegateRequest(BaseModel):
     goal: str
 
 
+def _connector_status(connector) -> dict:
+    configured = getattr(connector, "configured", True)
+    if not configured:
+        return {"configured": False, "reachable": False}
+    try:
+        connector.health()
+        return {"configured": True, "reachable": True}
+    except Exception as exc:  # connector unreachable, wrong URL, etc.
+        return {"configured": True, "reachable": False, "error": str(exc)}
+
+
 @app.get("/health")
 def health():
     return {
         "status": "up",
         "ceo": "claude",
-        "connectors": {name: getattr(c, "configured", True) for name, c in connectors.items()},
+        "connectors": {name: _connector_status(c) for name, c in connectors.items()},
     }
 
 

@@ -20,16 +20,25 @@ cp .env.example .env
 Fill in `.env`:
 
 - `ANTHROPIC_API_KEY` — required, this is what makes Claude the CEO/delegator.
-- `OMNIROUTE_API_URL` / `OMNIROUTE_API_KEY` — point these at your live
-  OmniRoute instance. Until both are set, the OmniRoute connector responds
-  honestly that it isn't configured instead of pretending to have delegated
-  anything.
+- `OMNIROUTE_API_KEY` — required. Get it from OmniRoute's own dashboard:
+  **Dashboard → Endpoints**.
+- `OMNIROUTE_API_URL` — where OmniRoute is reachable. Defaults to
+  `http://localhost:20128` (OmniRoute's documented default port). That only
+  works if Mission Control runs on the **same machine** as OmniRoute. If
+  Mission Control runs elsewhere (e.g. a cloud sandbox like this one), you
+  must turn on OmniRoute's remote mode (its `REMOTE-MODE.md`: exposing
+  OmniRoute remotely with a scoped token) and put that public URL here
+  instead — a cloud service cannot reach your machine's `localhost`.
 
-  OmniRoute's actual API contract isn't known yet — the connector
-  (`aix_mission_control/connectors/omniroute.py`) currently assumes a
-  `POST {OMNIROUTE_API_URL}/tasks` endpoint with a bearer token. If OmniRoute's
-  real API looks different (different auth, different routes), update
-  `OmniRouteConnector.handle` to match.
+Until `OMNIROUTE_API_KEY` is set, the connector honestly reports itself as
+unconfigured instead of pretending to have delegated anything. `GET /health`
+also actively pings OmniRoute's real health endpoint
+(`/api/monitoring/health`) so you can tell "configured" apart from
+"actually reachable."
+
+The connector talks OmniRoute's real, documented API: `POST
+/v1/chat/completions` (OpenAI-compatible) with a bearer token — this was
+looked up from OmniRoute's own API reference, not guessed.
 
 ### Run
 
