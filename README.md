@@ -9,7 +9,18 @@ and calls a `delegate_task` tool to hand pieces off to whichever connected
 system fits — currently just OmniRoute, more can be registered in
 `aix_mission_control/connectors/`.
 
-### Setup
+### Fastest path: run it next to your OmniRoute install
+
+OmniRoute only listens on `localhost` by default, so the quickest way to get
+a real connection is to run Mission Control on the same machine where
+OmniRoute is already live:
+
+```bash
+./setup_local.sh   # first run: creates .venv, installs deps, writes .env — fill it in
+./setup_local.sh   # second run: starts Mission Control on http://localhost:8000
+```
+
+### Manual setup
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
