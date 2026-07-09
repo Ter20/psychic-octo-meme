@@ -14,17 +14,28 @@ function runStatusBadgeClass(score) {
   return score >= 90 ? "pass" : "fail";
 }
 
-function renderRunPanel(container, ideaId, runId) {
+async function renderRunPanel(container, ideaId, runId) {
+  if (activeStreams.has(ideaId)) {
+    activeStreams.get(ideaId).close();
+    activeStreams.delete(ideaId);
+  }
+
+  // The loop engine only keeps run state in memory, so a run started before
+  // a server restart no longer exists. Check first rather than opening an
+  // EventSource against a 404 - the browser retries those forever.
+  try {
+    await api.loopRun(runId);
+  } catch {
+    container.innerHTML = `<div class="muted">This run's history was lost (server restarted). <button data-rebuild="${ideaId}">Rebuild</button></div>`;
+    return;
+  }
+
   container.innerHTML = `
     <div class="run-log" id="run-log-${ideaId}"></div>
     <div id="run-score-${ideaId}"></div>
     <div id="run-actions-${ideaId}"></div>
     <a href="/preview/runs/${runId}/files/" target="_blank" class="ghost-btn" style="display:inline-block;text-decoration:none;">Open live preview</a>
   `;
-
-  if (activeStreams.has(ideaId)) {
-    activeStreams.get(ideaId).close();
-  }
 
   const source = new EventSource(`/api/loop/${runId}/stream`);
   activeStreams.set(ideaId, source);
@@ -130,6 +141,9 @@ async function render() {
       render();
     } else if (e.target.dataset.reject) {
       await api.rejectRun(e.target.dataset.reject);
+      render();
+    } else if (e.target.dataset.rebuild) {
+      await api.buildIdea(e.target.dataset.rebuild);
       render();
     }
   });
