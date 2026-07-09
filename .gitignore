@@ -4,3 +4,15 @@
 
 # LangGraph
 .langgraph_api/
+
+# Agent OS dashboard
+node_modules/
+.env
+server/data/usage.json
+workspace/runs/*
+!workspace/runs/.gitkeep
+published/*
+!published/.gitkeep
+vault/PARA/Archives/*.md
+vault/journal/*.md
+*.log

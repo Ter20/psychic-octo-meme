@@ -1,0 +1,76 @@
+{
+  "profiles": [
+    {
+      "id": "claude-builder",
+      "label": "Claude (Builder)",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "role": "builder",
+      "enabled": true,
+      "fallbacks": ["mock-builder"]
+    },
+    {
+      "id": "claude-judge",
+      "label": "Claude Opus (Judge)",
+      "provider": "anthropic",
+      "model": "claude-opus-4-8",
+      "role": "judge",
+      "enabled": true,
+      "fallbacks": ["glm-judge", "mock-judge"]
+    },
+    {
+      "id": "glm-judge",
+      "label": "GLM 5.2 (Judge, via OpenRouter)",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.2",
+      "role": "judge",
+      "enabled": true,
+      "fallbacks": ["mock-judge"]
+    },
+    {
+      "id": "hermes-builder",
+      "label": "Hermes (Builder, via OpenRouter)",
+      "provider": "openrouter",
+      "model": "nousresearch/hermes-4-405b",
+      "role": "builder",
+      "enabled": true,
+      "fallbacks": ["ollama-builder", "mock-builder"]
+    },
+    {
+      "id": "gemini-builder",
+      "label": "Gemini (Builder, via OpenRouter)",
+      "provider": "openrouter",
+      "model": "google/gemini-3-pro",
+      "role": "builder",
+      "enabled": false,
+      "fallbacks": ["mock-builder"]
+    },
+    {
+      "id": "ollama-builder",
+      "label": "Local Ollama (Builder)",
+      "provider": "ollama",
+      "model": "llama3.1",
+      "role": "builder",
+      "enabled": false,
+      "fallbacks": ["mock-builder"]
+    },
+    {
+      "id": "mock-builder",
+      "label": "Mock Builder (no API key needed)",
+      "provider": "mock",
+      "model": "mock-builder-v1",
+      "role": "builder",
+      "enabled": true,
+      "fallbacks": []
+    },
+    {
+      "id": "mock-judge",
+      "label": "Mock Judge (no API key needed)",
+      "provider": "mock",
+      "model": "mock-judge-v1",
+      "role": "judge",
+      "enabled": true,
+      "fallbacks": []
+    }
+  ]
+}
