@@ -1,0 +1,4 @@
+{
+  "stages": ["idea_backlog", "auto_plan", "human_approval", "build", "done"],
+  "ideas": []
+}

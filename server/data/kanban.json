@@ -1,0 +1,13 @@
+{
+  "columns": ["backlog", "triage", "active", "blocked", "done"],
+  "cards": [
+    {
+      "id": "card-1",
+      "title": "Wire up real GSC OAuth for the SEO pipeline",
+      "column": "backlog",
+      "assignee": null,
+      "runId": null,
+      "createdAt": "2026-07-09T00:00:00.000Z"
+    }
+  ]
+}

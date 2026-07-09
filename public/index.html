@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agent OS Dashboard</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">Agent OS <span class="brand-sub">local dashboard</span></div>
+      <div class="topbar-status" id="server-status">connecting…</div>
+    </header>
+
+    <div class="grid3">
+      <!-- LEFT: Agent Fleet -->
+      <aside class="pane pane-left">
+        <h2>Agent Fleet</h2>
+        <div id="agent-list" class="agent-list"></div>
+        <button id="add-agent-note" class="ghost-btn" type="button">Manage in agents.json</button>
+      </aside>
+
+      <!-- MIDDLE: Active Engine -->
+      <main class="pane pane-middle">
+        <nav class="tabs" id="tabs">
+          <button class="tab active" data-tab="chat">Chat &amp; Voice</button>
+          <button class="tab" data-tab="kanban">Kanban Swarm Board</button>
+          <button class="tab" data-tab="ideas">Idea Pipeline</button>
+          <button class="tab" data-tab="seo">SEO Content Pipeline</button>
+        </nav>
+
+        <section class="tab-panel active" id="panel-chat">
+          <div class="chat-toolbar">
+            <label>Speak as
+              <select id="chat-profile"></select>
+            </label>
+            <button id="voice-toggle" class="ghost-btn" type="button">🎤 Start voice</button>
+            <label class="checkbox-inline"><input type="checkbox" id="voice-speak-replies" /> Speak replies</label>
+          </div>
+          <div class="chat-log" id="chat-log"></div>
+          <form id="chat-form" class="chat-form">
+            <input id="chat-input" type="text" placeholder="Message the mastermind…" autocomplete="off" />
+            <button type="submit">Send</button>
+          </form>
+        </section>
+
+        <section class="tab-panel" id="panel-kanban">
+          <div class="kanban-toolbar">
+            <input id="kanban-new-title" type="text" placeholder="New card title…" />
+            <button id="kanban-add" type="button">Add to backlog</button>
+          </div>
+          <div class="kanban-board" id="kanban-board"></div>
+        </section>
+
+        <section class="tab-panel" id="panel-ideas">
+          <div class="kanban-toolbar">
+            <input id="idea-new-title" type="text" placeholder="New idea…" />
+            <button id="idea-add" type="button">Add to backlog</button>
+          </div>
+          <div class="idea-board" id="idea-board"></div>
+        </section>
+
+        <section class="tab-panel" id="panel-seo">
+          <div class="seo-grid">
+            <div class="card">
+              <h3>Search Console queries</h3>
+              <p class="muted">
+                Real GSC OAuth isn't wired up in this build (needs a GCP project + credentials).
+                Paste a CSV export ("Performance &gt; Export") instead — one row per line as
+                <code>query,clicks,impressions,position</code>.
+              </p>
+              <textarea id="seo-csv" rows="6" placeholder="best crm for agencies,120,4300,4.2"></textarea>
+              <button id="seo-import" type="button">Import</button>
+              <table class="seo-table" id="seo-table"><thead>
+                <tr><th>Query</th><th>Clicks</th><th>Impr.</th><th>Pos.</th></tr>
+              </thead><tbody></tbody></table>
+            </div>
+            <div class="card">
+              <h3>Content brief generator</h3>
+              <input id="seo-keyword" type="text" placeholder="Target keyword" />
+              <button id="seo-brief" type="button">Generate brief</button>
+              <pre id="seo-brief-output" class="brief-output"></pre>
+              <button id="seo-deploy" type="button" class="ghost-btn">Deploy (Netlify/WordPress)</button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- RIGHT: Shared Memory & Goals -->
+      <aside class="pane pane-right">
+        <h2>Goals</h2>
+        <form id="goal-form" class="inline-form">
+          <input id="goal-input" type="text" placeholder="Add a daily goal…" />
+          <button type="submit">+</button>
+        </form>
+        <ul id="goal-list" class="goal-list"></ul>
+
+        <h2>Journal</h2>
+        <textarea id="journal-input" rows="3" placeholder="Quick journal entry…"></textarea>
+        <button id="journal-save" class="ghost-btn" type="button">Save entry</button>
+        <pre id="journal-view" class="journal-view"></pre>
+
+        <h2>Memory search</h2>
+        <input id="memory-search" type="text" placeholder="Search the vault…" />
+        <div id="memory-results" class="memory-results"></div>
+
+        <h2>Memory Galaxy</h2>
+        <canvas id="memory-galaxy" width="280" height="220"></canvas>
+      </aside>
+    </div>
+  </div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
