@@ -1,19 +1,4 @@
 {
-  "stages": [
-    "idea_backlog",
-    "auto_plan",
-    "human_approval",
-    "build",
-    "done"
-  ],
-  "ideas": [
-    {
-      "id": "34926118-74c7-4bd9-8ab5-0f54ba47c624",
-      "title": "Build a pricing calculator page",
-      "stage": "build",
-      "definitionOfDone": "Deliver: Build a pricing calculator page",
-      "runId": "724514d1-5701-424c-ae60-abdccbd2e8f3",
-      "createdAt": "2026-07-09T07:27:10.715Z"
-    }
-  ]
+  "stages": ["idea_backlog", "auto_plan", "human_approval", "build", "done"],
+  "ideas": []
 }
