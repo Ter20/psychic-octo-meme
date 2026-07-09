@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+anthropic>=0.40
+httpx
+python-dotenv
+pydantic
