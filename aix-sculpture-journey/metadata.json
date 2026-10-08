@@ -1,0 +1,6 @@
+{
+  "name": "AIX Sculpture Journey",
+  "description": "An interactive 3D luxury gallery and sculpture journey through the chapters of Artificial Intelligence Xtreme.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
