@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIX — Artificial Intelligence Extreme</title>
+  <meta name="description" content="AI marketing for Dallas–Fort Worth local businesses. Content creation, reputation rescue, voice AI, and SEO — automated and affordable." />
+  <meta property="og:title" content="AIX — Artificial Intelligence Extreme" />
+  <meta property="og:description" content="AI that works while you sleep. Voice AI, SEO, Reputation Rescue, and Content Creation for DFW local businesses." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #050508;
+      --bg2: #0c0c12;
+      --bg3: #111118;
+      --bronze: #cd7f32;
+      --bronze-light: #e8a84a;
+      --blue: #1d4ed8;
+      --blue-light: #3b6ef0;
+      --white: #ffffff;
+      --muted: #8b8b9a;
+      --border: rgba(205,127,50,0.2);
+      --glow: rgba(205,127,50,0.08);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --bg: #050508;
+        --bg2: #0c0c12;
+        --bg3: #111118;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #050508;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2rem;
+      background: rgba(5,5,8,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Cinzel', serif;
+      font-weight: 900;
+      font-size: 1.25rem;
+      letter-spacing: 0.15em;
+      color: var(--bronze);
+    }
+
+    .nav-logo span {
+      color: var(--white);
+      font-weight: 400;
+      font-size: 0.7rem;
+      display: block;
+      letter-spacing: 0.3em;
+      margin-top: -2px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--bronze); }
+
+    .nav-cta {
+      background: var(--bronze);
+      color: #000;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.6rem 1.4rem;
+      border-radius: 2px;
+      transition: background 0.2s;
+    }
+
+    .nav-cta:hover { background: var(--bronze-light); }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 1rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% 0%, rgba(205,127,50,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(29,78,216,0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .hero-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2.5rem, 7vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: 0.02em;
+      margin-bottom: 1.5rem;
+      max-width: 900px;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--bronze);
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto 2.5rem;
+      font-weight: 400;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background: var(--bronze);
+      color: #000;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 1rem 2rem;
+      border-radius: 2px;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--bronze-light);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      border: 1px solid var(--border);
+      color: var(--white);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 1rem 2rem;
+      border-radius: 2px;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--bronze);
+      transform: translateY(-1px);
+    }
+
+    .hero-location {
+      margin-top: 3rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* SECTION BASE */
+    section {
+      padding: 6rem 1rem;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+
+    .section-sub {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 520px;
+      margin-bottom: 3rem;
+    }
+
+    /* SERVICES */
+    .services { background: var(--bg2); }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .service-card {
+      background: var(--bg2);
+      padding: 2.5rem 2rem;
+      transition: background 0.2s;
+    }
+
+    .service-card:hover { background: var(--bg3); }
+
+    .service-icon {
+      font-size: 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .service-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+      color: var(--bronze);
+    }
+
+    .service-desc {
+      color: var(--muted);
+      font-size: 0.875rem;
+      line-height: 1.7;
+      margin-bottom: 1.25rem;
+    }
+
+    .service-price {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--white);
+      letter-spacing: 0.05em;
+    }
+
+    /* DARE VIRA */
+    .dare {
+      background: var(--bg);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dare::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(29,78,216,0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .dare-number {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: 0.1em;
+      margin: 1.5rem 0;
+      position: relative;
+    }
+
+    .dare-number a {
+      color: var(--bronze);
+      transition: color 0.2s;
+    }
+
+    .dare-number a:hover { color: var(--bronze-light); }
+
+    .dare-body {
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.8;
+      position: relative;
+    }
+
+    .dare-secret {
+      display: inline-block;
+      margin-top: 1.5rem;
+      background: rgba(205,127,50,0.1);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 1rem 2rem;
+      font-size: 0.85rem;
+      color: var(--bronze);
+      letter-spacing: 0.05em;
+      position: relative;
+    }
+
+    /* PRICING */
+    .pricing { background: var(--bg2); }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .pricing-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      border-radius: 2px;
+      position: relative;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+
+    .pricing-card:hover {
+      border-color: var(--bronze);
+      transform: translateY(-2px);
+    }
+
+    .pricing-card.featured {
+      border-color: var(--bronze);
+      background: rgba(205,127,50,0.05);
+    }
+
+    .pricing-badge {
+      position: absolute;
+      top: -1px; right: 2rem;
+      background: var(--bronze);
+      color: #000;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.8rem;
+    }
+
+    .pricing-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--bronze);
+    }
+
+    .pricing-price {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      line-height: 1;
+    }
+
+    .pricing-period {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 2rem;
+    }
+
+    .pricing-features li {
+      font-size: 0.875rem;
+      color: var(--muted);
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pricing-features li::before {
+      content: '—';
+      color: var(--bronze);
+      flex-shrink: 0;
+    }
+
+    .pricing-savings {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--bronze);
+      letter-spacing: 0.1em;
+      margin-bottom: 1.5rem;
+    }
+
+    .pricing-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* ABOUT */
+    .about { background: var(--bg); }
+
+    .about-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .about-inner { grid-template-columns: 1fr; gap: 2rem; }
+    }
+
+    .about-quote {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.3rem, 3vw, 1.8rem);
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--white);
+      border-left: 3px solid var(--bronze);
+      padding-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .about-text {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .stat {
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      border-radius: 2px;
+    }
+
+    .stat-num {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--bronze);
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    .about-visual {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+
+    .vira-name {
+      font-family: 'Cinzel', serif;
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--bronze);
+      letter-spacing: 0.2em;
+      margin-bottom: 0.5rem;
+    }
+
+    .vira-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    .vira-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-top: 1.5rem;
+    }
+
+    .vira-stat {
+      background: var(--bg2);
+      padding: 1rem;
+    }
+
+    .vira-stat-val {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.1rem;
+      color: var(--white);
+      margin-bottom: 0.2rem;
+    }
+
+    .vira-stat-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 3rem 1rem;
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-family: 'Cinzel', serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--bronze);
+      letter-spacing: 0.2em;
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-tagline {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .footer-links a {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--bronze); }
+
+    .footer-copy {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* DIVIDER */
+    .divider {
+      width: 60px;
+      height: 1px;
+      background: var(--bronze);
+      margin: 1.5rem 0;
+    }
+
+    .divider-center {
+      margin: 1.5rem auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">
+      AIX
+      <span>Artificial Intelligence Extreme</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#dare">Dare VIRA</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+    <a href="tel:7245422946" class="nav-cta">Call VIRA</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <p class="hero-label">Dallas · Fort Worth · Artificial Intelligence</p>
+    <h1>AI That Works<br /><em>While You Sleep</em></h1>
+    <p class="hero-sub">AIX delivers content creation, reputation rescue, voice AI, and SEO — automated and affordable — for local businesses across Dallas–Fort Worth.</p>
+    <div class="hero-actions">
+      <a href="#dare" class="btn-primary">#DareVIRA — Call (724) 542-2946</a>
+      <a href="#pricing" class="btn-secondary">See Pricing</a>
+    </div>
+    <p class="hero-location">Dallas, TX &nbsp;·&nbsp; Terry White, Founder</p>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="services" id="services">
+    <div class="container">
+      <p class="section-label">What We Do</p>
+      <h2 class="section-title">Four Services.<br />One AI Advantage.</h2>
+      <p class="section-sub">Every service runs on automation so you can focus on doing the work — not marketing it.</p>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon">✍️</div>
+          <p class="service-name">Content Creation & Posting</p>
+          <p class="service-desc">12 branded posts per month across Facebook and Instagram — graphics, captions, scheduling. Done for you.</p>
+          <p class="service-price">From $500 / month</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">⭐</div>
+          <p class="service-name">Reputation Rescue</p>
+          <p class="service-desc">We monitor and respond to every Google review — good and bad — and help bring your rating up within 30 days.</p>
+          <p class="service-price">From $500 / month</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">📞</div>
+          <p class="service-name">Voice AI — VIRA</p>
+          <p class="service-desc">VIRA answers every inbound call 24/7, qualifies leads, books appointments, and logs everything automatically.</p>
+          <p class="service-price">From $750 / month</p>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🔍</div>
+          <p class="service-name">SEO</p>
+          <p class="service-desc">On-page optimization, Google Business Profile management, and monthly ranking reports so local customers find you first.</p>
+          <p class="service-price">From $750 / month</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DARE VIRA -->
+  <section class="dare" id="dare">
+    <div class="container">
+      <p class="section-label">#DareVIRA</p>
+      <h2 class="section-title" style="text-align:center;">I Dare You.<br />Call Her Right Now.</h2>
+      <div class="divider divider-center"></div>
+      <div class="dare-number">
+        <a href="tel:7245422946">(724) 542-2946</a>
+      </div>
+      <p class="dare-body">
+        VIRA is AIX's AI voice agent. She works 24 hours a day, never misses a call, never loses a detail, and qualifies every lead before you ever pick up the phone.
+        <br /><br />
+        We've been daring people to try to trip her up since day one. Try to confuse her. Give her a hard time. See if she makes a mistake.
+        <br /><br />
+        Nobody has beaten her yet.
+      </p>
+      <div class="dare-secret">
+        💡 Say <strong>"Terrence"</strong> on the call — Terry's phone rings. Personally.
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <p class="section-label">Pricing</p>
+      <h2 class="section-title">Simple. Monthly. No Lock-In.</h2>
+      <p class="section-sub">Month-to-month retainers. Cancel anytime with 30 days' notice. Setup fee of $250 waived with a 3-month commitment.</p>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <p class="pricing-name">Starter</p>
+          <p class="pricing-price">$850</p>
+          <p class="pricing-period">/ month</p>
+          <p class="pricing-savings">SAVE $150 vs. buying separately</p>
+          <ul class="pricing-features">
+            <li>Reputation Rescue</li>
+            <li>Content Creation & Posting</li>
+            <li>Monthly performance report</li>
+            <li>No long-term contract</li>
+          </ul>
+          <a href="tel:7245422946" class="btn-primary" style="display:block;text-align:center;">Call VIRA to Start</a>
+        </div>
+        <div class="pricing-card featured">
+          <div class="pricing-badge">Most Popular</div>
+          <p class="pricing-name">Growth</p>
+          <p class="pricing-price">$1,200</p>
+          <p class="pricing-period">/ month</p>
+          <p class="pricing-savings">SAVE $550 vs. buying separately</p>
+          <ul class="pricing-features">
+            <li>SEO</li>
+            <li>Content Creation & Posting</li>
+            <li>Reputation Rescue</li>
+            <li>Monthly ranking report</li>
+            <li>No long-term contract</li>
+          </ul>
+          <a href="tel:7245422946" class="btn-primary" style="display:block;text-align:center;">Call VIRA to Start</a>
+        </div>
+        <div class="pricing-card">
+          <p class="pricing-name">Pro — All In</p>
+          <p class="pricing-price">$1,500</p>
+          <p class="pricing-period">/ month</p>
+          <p class="pricing-savings">SAVE $1,000 vs. buying separately</p>
+          <ul class="pricing-features">
+            <li>All 4 services included</li>
+            <li>Voice AI — VIRA 24/7</li>
+            <li>SEO + Content + Reputation</li>
+            <li>Priority support from Terry</li>
+            <li>No long-term contract</li>
+          </ul>
+          <a href="tel:7245422946" class="btn-primary" style="display:block;text-align:center;">Call VIRA to Start</a>
+        </div>
+      </div>
+      <p class="pricing-note">All plans activate within 7 business days · Billed on the 1st · Stripe payments</p>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="container">
+      <div class="about-inner">
+        <div>
+          <p class="section-label">About AIX</p>
+          <div class="about-quote">"I built AIX because good businesses in Dallas were losing to bad ones — just because of their online presence."</div>
+          <p class="about-text">AIX — Artificial Intelligence Extreme — is a one-man AI marketing operation based in Dallas, TX, built by Terry White. The mission is simple: give local small businesses the same AI marketing power the big companies have, at a price they can actually afford.</p>
+          <p class="about-text">No agency markup. No 12-month contracts. No corporate runaround. Just AI tools that work, run by a person who picks up the phone.</p>
+          <div class="about-stats">
+            <div class="stat">
+              <p class="stat-num">24/7</p>
+              <p class="stat-label">VIRA answers calls</p>
+            </div>
+            <div class="stat">
+              <p class="stat-num">DFW</p>
+              <p class="stat-label">Dallas–Fort Worth based</p>
+            </div>
+            <div class="stat">
+              <p class="stat-num">$500</p>
+              <p class="stat-label">Starting monthly rate</p>
+            </div>
+            <div class="stat">
+              <p class="stat-num">30d</p>
+              <p class="stat-label">To see results</p>
+            </div>
+          </div>
+        </div>
+        <div class="about-visual">
+          <p class="vira-name">VIRA</p>
+          <p class="vira-title">AIX Voice Intelligence · Active 24/7</p>
+          <a href="tel:7245422946" class="btn-primary" style="display:inline-block;">(724) 542-2946</a>
+          <div class="vira-stats">
+            <div class="vira-stat">
+              <p class="vira-stat-val">24/7</p>
+              <p class="vira-stat-label">Always on</p>
+            </div>
+            <div class="vira-stat">
+              <p class="vira-stat-val">0</p>
+              <p class="vira-stat-label">Missed calls</p>
+            </div>
+            <div class="vira-stat">
+              <p class="vira-stat-val">100%</p>
+              <p class="vira-stat-label">Lead capture</p>
+            </div>
+            <div class="vira-stat">
+              <p class="vira-stat-val">Live</p>
+              <p class="vira-stat-label">Call now</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p class="footer-logo">AIX</p>
+    <p class="footer-tagline">Artificial Intelligence Extreme · Dallas, TX</p>
+    <div class="footer-links">
+      <a href="#services">Services</a>
+      <a href="#dare">#DareVIRA</a>
+      <a href="#pricing">Pricing</a>
+      <a href="tel:7245422946">(724) 542-2946</a>
+      <a href="aix-sculpture-journey/index.html">3D Experience</a>
+    </div>
+    <p class="footer-copy">© 2026 AIX — Artificial Intelligence Extreme. Dallas, TX. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
