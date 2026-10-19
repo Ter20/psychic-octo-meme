@@ -28,9 +28,10 @@ try:
     # Tip: use ensure_licensed(check_machine=True) to also lock to one computer.
     license_info = ensure_licensed()
 except LicenseError as exc:
-    raise SystemExit(f"[Mark LVI] License problem: {exc}")
+    raise SystemExit(f"[VIRA] License problem: {exc}")
 
-print(f"[Mark LVI] License OK. Welcome, {license_info['holder']}! (plan: {license_info['plan']})")
+print(f"[VIRA] License OK. Welcome, {license_info['holder']}! (plan: {license_info['plan']})")
+print("[VIRA] See your license details any time with:  python -m licensing.license_info")
 # <<< end COPY ME -------------------------------------------------------------
 
 
@@ -57,7 +58,7 @@ def start_assistant() -> None:
     model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
     print()
-    print("Mark LVI is ready. Type a message, or 'quit' to leave.")
+    print("VIRA is ready. Type a message, or 'quit' to leave.")
     while True:
         try:
             you = input("you  > ").strip()

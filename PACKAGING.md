@@ -27,17 +27,27 @@ python -m licensing.issue_license --holder "Me"
 
 **Mac / Linux:**
 ```bash
-pyinstaller --onefile --name MarkLVI --add-data "app_public.key:." main.py
+pyinstaller --onefile --windowed --name VIRA \
+  --add-data "app_public.key:." \
+  --add-data "assets:assets" \
+  main.py
 ```
 
 **Windows (note the `;` instead of `:`):**
 ```bash
-pyinstaller --onefile --name MarkLVI --add-data "app_public.key;." main.py
+pyinstaller --onefile --windowed --name VIRA ^
+  --add-data "app_public.key;." ^
+  --add-data "assets;assets" ^
+  main.py
 ```
 
+> `--add-data "assets:assets"` bundles the AIX logo so the branded window
+> still shows it. `--windowed` hides the black terminal box (remove it if you
+> want to keep the text console while testing).
+
 When it finishes, your single program file is in the **`dist/`** folder:
-- Mac/Linux: `dist/MarkLVI`
-- Windows: `dist/MarkLVI.exe`
+- Mac/Linux: `dist/VIRA`
+- Windows: `dist/VIRA.exe`
 
 ## Give it to someone
 

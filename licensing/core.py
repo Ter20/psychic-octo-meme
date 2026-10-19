@@ -82,7 +82,7 @@ def make_license(
     private_path: str | Path,
     *,
     holder: str,
-    product: str = "Mark LVI",
+    product: str = "VIRA",
     plan: str = "personal",
     expires: str | None = None,
     machine_id: str | None = None,

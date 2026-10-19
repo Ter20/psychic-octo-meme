@@ -57,7 +57,7 @@ def require_license(*, check_machine: bool = False) -> dict:
     try:
         return load_license_info(check_machine=check_machine)
     except LicenseError as exc:
-        raise SystemExit(f"[Mark LVI] License problem: {exc}")
+        raise SystemExit(f"[VIRA] License problem: {exc}")
 
 
 if __name__ == "__main__":

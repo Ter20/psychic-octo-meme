@@ -43,22 +43,37 @@ def prompt_for_license(*, check_machine: bool = False) -> dict | None:
     import tkinter as tk
     from tkinter import filedialog, scrolledtext
 
+    from licensing import branding, ui
+
     result: dict = {}
 
     root = tk.Tk()
-    root.title("Mark LVI - Activate")
-    root.geometry("470x330")
+    root.title(f"{branding.PRODUCT} by {branding.BRAND} - Activate")
+    root.configure(bg=branding.BG)
+    root.geometry("440x520")
     root.resizable(False, False)
 
-    tk.Label(root, text="Enter your license key", font=("Arial", 14, "bold")).pack(pady=(16, 2))
-    tk.Label(root, text="Paste the key you were given, then click Activate.",
-             fg="#555555").pack()
+    icon = branding.load_photo(tk, branding.ICON_PATH)
+    if icon is not None:
+        root.iconphoto(False, icon)
 
-    text_box = scrolledtext.ScrolledText(root, height=6, width=54, wrap="char")
-    text_box.pack(padx=16, pady=10)
+    ui.add_header(root)  # animated electric logo + VIRA / AIX wordmark
+
+    tk.Label(root, text="Enter your license key", bg=branding.BG, fg=branding.TEXT,
+             font=("Arial", 13, "bold")).pack(pady=(4, 2))
+    tk.Label(root, text="Paste the key you were given, then click Activate.",
+             bg=branding.BG, fg=branding.MUTED).pack()
+
+    text_box = scrolledtext.ScrolledText(
+        root, height=5, width=48, wrap="char",
+        bg=branding.PANEL, fg=branding.TEXT, insertbackground=branding.ACCENT,
+        relief="flat", bd=8, font=("Consolas", 10),
+    )
+    text_box.pack(padx=18, pady=10)
     text_box.focus_set()
 
-    status = tk.Label(root, text="", fg="#b00020", wraplength=430, justify="left")
+    status = tk.Label(root, text="", bg=branding.BG, fg=branding.ERROR,
+                      wraplength=400, justify="left")
     status.pack()
 
     def load_from_file() -> None:
@@ -84,10 +99,10 @@ def prompt_for_license(*, check_machine: bool = False) -> dict | None:
         result.update(info)
         root.destroy()
 
-    row = tk.Frame(root)
-    row.pack(pady=8)
-    tk.Button(row, text="Load from file...", command=load_from_file).pack(side="left", padx=6)
-    tk.Button(row, text="Activate", command=activate, default="active").pack(side="left", padx=6)
+    row = tk.Frame(root, bg=branding.BG)
+    row.pack(pady=10)
+    ui.style_button(row, "Load from file...", load_from_file).pack(side="left", padx=6)
+    ui.style_button(row, "Activate", activate, primary=True).pack(side="left", padx=6)
 
     root.bind("<Return>", lambda _event: activate())
     root.mainloop()
