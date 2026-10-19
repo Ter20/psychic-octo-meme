@@ -19,3 +19,8 @@ __pycache__/
 .venv/
 venv/
 .env
+
+# --- PyInstaller build leftovers (see PACKAGING.md) ---
+build/
+dist/
+*.spec
