@@ -69,6 +69,24 @@ To test by hand:
 python -m licensing.check_license
 ```
 
+## Nicer for users: a popup window 🪟
+
+Non-techy users should not have to copy files. `main.py` already uses a popup:
+the first time someone runs the app with no license, a small window appears
+asking them to paste their key (or load a `.key` file). Once they activate, the
+key is saved and the window never comes back.
+
+- The popup uses **Tkinter**, which comes with Python on **Windows and Mac**.
+- On **Linux** only, install it once: `sudo apt install python3-tk`
+- No screen (e.g. a server)? The app falls back to a clear text message instead
+  of crashing.
+
+Test the window by hand:
+
+```bash
+python -m licensing.license_window
+```
+
 ## Good to know
 
 - This checking works **offline** — no server needed.

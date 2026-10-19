@@ -17,13 +17,19 @@ import os
 # >>> COPY ME: load secret settings, then check the license -------------------
 from dotenv import load_dotenv
 
-from licensing.check_license import require_license
+from licensing.core import LicenseError
+from licensing.license_window import ensure_licensed
 
 load_dotenv()  # reads a file named .env in this folder (if it exists)
 
-# Stops the whole app with a clear message if the license is not valid.
-# Tip: use require_license(check_machine=True) to also lock to one computer.
-license_info = require_license()
+try:
+    # Shows a small "enter your license key" popup ONLY if there is no valid
+    # license yet. Once activated, the key is saved and the popup never returns.
+    # Tip: use ensure_licensed(check_machine=True) to also lock to one computer.
+    license_info = ensure_licensed()
+except LicenseError as exc:
+    raise SystemExit(f"[Mark LVI] License problem: {exc}")
+
 print(f"[Mark LVI] License OK. Welcome, {license_info['holder']}! (plan: {license_info['plan']})")
 # <<< end COPY ME -------------------------------------------------------------
 
