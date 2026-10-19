@@ -17,7 +17,7 @@ from licensing import branding
 class ElectricLogo(tk.Canvas):
     """A canvas that shows the logo with a spark running down the center."""
 
-    def __init__(self, parent, photo, *, seam_x_frac: float = 0.5):
+    def __init__(self, parent, photo, *, seam_x_frac: float = 0.52):
         width = photo.width()
         height = photo.height()
         super().__init__(parent, width=width, height=height,
@@ -28,21 +28,56 @@ class ElectricLogo(tk.Canvas):
         self._width = width
         self._height = height
         self._seam_x = int(width * seam_x_frac)
-        self._y = 0
         self._segments: list[int] = []
         self._running = True
 
-        # The bolt: a white-hot core with blue edges that fade out.
-        self._colors = [branding.ACCENT, branding.ACCENT_SOFT, "#FFFFFF",
-                        branding.ACCENT_SOFT, branding.ACCENT]
-        self._widths = [2, 3, 4, 3, 2]
-        self._seg_len = 9
+        # Flicker: strike for a few frames, go dark for a few, then strike again.
+        self._on = True
+        self._phase_left = 3
 
         self.bind("<Destroy>", lambda _event: self.stop())
         self._animate()
 
     def stop(self) -> None:
         self._running = False
+
+    def _jagged_path(self) -> list[float]:
+        """A zig-zag lightning path down the seam, re-randomized every frame."""
+        nodes = 14
+        points: list[float] = []
+        for i in range(nodes + 1):
+            t = i / nodes
+            y = t * self._height
+            amp = (1 - abs(2 * t - 1)) * 13  # wild in the middle, tight at the ends
+            x = self._seam_x + random.uniform(-amp, amp)
+            points.extend((x, y))
+        return points
+
+    def _fork(self, path: list[float]) -> list[float]:
+        """A short branch splitting off a random point on the main bolt."""
+        i = random.randrange(3, len(path) // 2 - 2) * 2
+        bx, by = path[i], path[i + 1]
+        branch = [bx, by]
+        direction = random.choice((-1, 1))
+        for _ in range(random.randint(2, 4)):
+            bx += direction * random.uniform(6, 16)
+            by += random.uniform(7, 15)
+            branch.extend((bx, by))
+        return branch
+
+    def _draw_bolt(self) -> None:
+        path = self._jagged_path()
+        # Stack lines widest-to-thinnest to fake a glow around a white-hot core.
+        for color, line_w in ((branding.ACCENT, 5), (branding.ACCENT_SOFT, 2), ("#FFFFFF", 1)):
+            self._segments.append(
+                self.create_line(*path, fill=color, width=line_w, joinstyle="round"))
+        for _ in range(random.randint(1, 2)):
+            if random.random() < 0.7:
+                branch = self._fork(path)
+                self._segments.append(
+                    self.create_line(*branch, fill=branding.ACCENT_SOFT, width=2))
+                self._segments.append(
+                    self.create_line(*branch, fill="#FFFFFF", width=1))
 
     def _animate(self) -> None:
         if not self._running:
@@ -52,20 +87,14 @@ class ElectricLogo(tk.Canvas):
                 self.delete(item)
             self._segments.clear()
 
-            for i, (color, line_w) in enumerate(zip(self._colors, self._widths)):
-                top = self._y - i * self._seg_len
-                if top < 0:
-                    continue
-                jitter = random.randint(-2, 2)  # tiny wiggle = electric feel
-                x = self._seam_x + jitter
-                item = self.create_line(x, top, x, top - self._seg_len,
-                                        fill=color, width=line_w, capstyle="round")
-                self._segments.append(item)
+            self._phase_left -= 1
+            if self._phase_left <= 0:
+                self._on = not self._on
+                self._phase_left = random.randint(2, 4) if self._on else random.randint(1, 3)
+            if self._on:
+                self._draw_bolt()  # new jagged shape each frame = flicker
 
-            self._y += 8
-            if self._y > self._height + self._seg_len * len(self._colors):
-                self._y = 0
-            self.after(40, self._animate)
+            self.after(55, self._animate)
         except tk.TclError:
             # The window was closed mid-animation; just stop quietly.
             self._running = False
