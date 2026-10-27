@@ -1,8 +1,8 @@
 # AIX — Artificial Intelligence Extreme
 
 **Founder:** Terry White · Dallas, TX  
-**GitHub repo:** `Ter20/psychic-octo-meme` (branch: `claude/new-session-qnuDX`, PR #3)  
-**GitHub Pages (pending):** Enable in repo Settings → Pages → deploy from main/root
+**GitHub repo:** `Ter20/psychic-octo-meme` (main branch, PR #3 merged)  
+**Live site:** https://ter20.github.io/psychic-octo-meme
 
 ---
 
