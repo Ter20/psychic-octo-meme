@@ -4,3 +4,23 @@
 
 # LangGraph
 .langgraph_api/
+
+# --- Mark LVI license system: NEVER commit these ---
+# Your secret stamp. If this leaks, anyone can make fake licenses.
+secrets/
+owner_private.key
+# Per-user license files (each person gets their own).
+license.key
+*.lic
+
+# --- Common Python + secrets housekeeping ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# --- PyInstaller build leftovers (see PACKAGING.md) ---
+build/
+dist/
+*.spec
