@@ -2,7 +2,8 @@
 
 **Founder:** Terry White · Dallas, TX  
 **GitHub repo:** `Ter20/psychic-octo-meme` (main branch, PR #3 merged)  
-**Live site:** https://ter20.github.io/psychic-octo-meme
+**Live site:** https://ter20.github.io/psychic-octo-meme  
+**Primary domain:** https://aix-io.com
 
 ---
 
